@@ -14,36 +14,71 @@
       <div style="clear: both;"></div>
     </div>
     <div id="table"></div>
-    <script>
-      var propSelect  = $('#propSelect').MPPropertySelect();
-      var dateSelect  = $('#dateSelect').MPDatepicker();
-      var eventTable  = $('#table').MPTable({
-        showPercentages: true,
-        firstColHeader: 'Event'
-      });
+    <div id="table2"></div>
 
+    <script>
       var params = {
-          from: moment().subtract(30, 'days'),    // the earliest date you'd like to include in the query
-          to: moment(),                           // the latest date you'd like to include in the query
           limit: 1000,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'month',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
       };
-
+      var startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      var endDate = new Date();
+      var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
+      var eventTable  = $('#table').MPTable({
+        showPercentages: true,
+        firstColHeader: 'Event'
+      });
+      var eventTable2  = $('#table2').MPTable({
+        showPercentages: false,
+        firstColHeader: 'Thing'
+      });      
+      var params = {
+          limit: 1000,                             // maximum number of results to return
+          type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'month',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+      };
       var runQuery = function() {
-        var eventName = "page_viewed",
-            propName  = propSelect.MPPropertySelect('value'),
-            dateRange = dateSelect.MPDatepicker('value');
+        var eventName = 'page_viewed';
+        var dateRange = dateSelect.MPDatepicker('value');
+        var params = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 100,                             // maximum number of results to return
+          type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'month'                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          // the following are undefined by default
+          //'where': 'properties["subtitle"] ==  May/June 2015',     // an expression to filter by. See event filters
+          //'method': 'average',                    // string specifying a way to aggregate the results, can be 'numeric', 'sum', or 'average'
+          //'buckets': 4,                           // the number of buckets to return in a 'numeric' query
+        };
 
         if (eventName) {
-          MP.api.segment(eventName, propName, params).done(function(results) {
+          console.log(params);
+          MP.api.segment(eventName, 'subtitle', params).done(function(results) {
             eventTable.MPTable('setData', results);
+            console.log("segment data", results);
           });
         }
-      };
-      propSelect.on('change', runQuery);
-      dateSelect.on('change', runQuery);
+/*
+                // optional
+        var params2 = {
+            from: dateRange.from,
+            to: dateRange.to,
+            unit: 'month',
+            limit: 3      // maximum number of results to return
+        };
 
+        MP.api.propertyValues('page_viewed', 'subtitle', params2).done(function(results) {
+              eventTable2.MPTable('setData', results.json);
+              console.log("property values data", results);
+        });
+*/
+      };
+
+
+      dateSelect.on('change', runQuery);
       $( document ).ready(runQuery);
     </script>
   </body>
