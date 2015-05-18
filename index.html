@@ -5,17 +5,53 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/css/reset.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
+    <style>
+    .spacer { margin-top: 20px;}
+    </style>
   </head>
   <body class="mixpanel-platform-body">
     <div class="mixpanel-platform-section">
       <div id="by" class="mixpanel-platform-label" style="margin-left: 10px; display: none;">by</div>
-      <div id="propSelect" style="float: left;"></div>
+      <div id="issueSelect" style="float: left;"></div>
       <div id="dateSelect" style="float: right;"></div>
       <div style="clear: both;"></div>
     </div>
-    <div id="table"></div>
-    <div id="table2"></div>
-
+    <div id="table2" class="mixpanel-platform-output-table mixpanel-platform-output" style="visibility: visible;">
+      <div class="mixpanel-platform-chart-table">
+        <div class="mp_chart_header mp_chart_row">
+          <div class="mp_chart_cell mp_chart_row_label" style="width: 72px;">
+            <span class="content">Metric</span>
+          </div>
+          <div class="mp_chart_cell" style="width: 65px;">
+            <span class="content">Total</span>
+          </div>
+        </div>
+        <div class="mp_chart_row">
+          <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
+            <span class="content">Page Views</span>
+          </div>
+          <div class="mp_chart_cell" style="width: 65px;">
+            <span id="pageviews"class="content"></span>
+          </div>
+        </div>
+        <div class="mp_chart_row">
+          <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
+            <span class="content">Visitors</span>
+          </div>
+          <div class="mp_chart_cell" style="width: 65px;">
+            <span id="visitors"class="content"></span>
+          </div>
+        </div>
+        <div class="mp_chart_row">
+          <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
+            <span class="content">Unique Visitors</span>
+          </div>
+          <div class="mp_chart_cell" style="width: 65px;">
+            <span id="unique"class="content"></span>
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
       var params = {
           limit: 1000,                             // maximum number of results to return
@@ -28,53 +64,62 @@
       var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
       var eventTable  = $('#table').MPTable({
         showPercentages: true,
-        firstColHeader: 'Event'
+        firstColHeader: 'Issue'
       });
-      var eventTable2  = $('#table2').MPTable({
-        showPercentages: false,
-        firstColHeader: 'Thing'
-      });      
       var params = {
           limit: 1000,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'month',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
       };
       var runQuery = function() {
-        var eventName = 'page_viewed';
         var dateRange = dateSelect.MPDatepicker('value');
         var params = {
           from: dateRange.from,
           to: dateRange.to,
-          limit: 100,                             // maximum number of results to return
+          limit: 9,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
-          unit: 'month'                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          unit: 'month',                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
           // the following are undefined by default
-          //'where': 'properties["subtitle"] ==  May/June 2015',     // an expression to filter by. See event filters
+          //'where': 'properties["subtitle"] >=  10',     // an expression to filter by. See event filters
+          //'method': 'average',                    // string specifying a way to aggregate the results, can be 'numeric', 'sum', or 'average'
+          //'buckets': 4,                           // the number of buckets to return in a 'numeric' query
+        };
+        var params2 = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 10,                             // maximum number of results to return
+          type: 'unique',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'month',                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          // the following are undefined by default
+          //'where': 'properties["subtitle"] >=  10',     // an expression to filter by. See event filters
           //'method': 'average',                    // string specifying a way to aggregate the results, can be 'numeric', 'sum', or 'average'
           //'buckets': 4,                           // the number of buckets to return in a 'numeric' query
         };
 
-        if (eventName) {
-          console.log(params);
-          MP.api.segment(eventName, 'subtitle', params).done(function(results) {
-            eventTable.MPTable('setData', results);
-            console.log("segment data", results);
-          });
-        }
-/*
-                // optional
-        var params2 = {
-            from: dateRange.from,
-            to: dateRange.to,
-            unit: 'month',
-            limit: 3      // maximum number of results to return
-        };
-
-        MP.api.propertyValues('page_viewed', 'subtitle', params2).done(function(results) {
-              eventTable2.MPTable('setData', results.json);
-              console.log("property values data", results);
+        MP.api.segment('page_viewed', 'subtitle', params).done(function(results) {
+          var issues = results.values();
+          console.log(issues[1]);
+         // for(var i=0; i< issues.childre; i++){
+           // delete(i.children[i])
+          //  }
         });
-*/
+
+       MP.api.segment('page_viewed', params).done(function(results) {
+          var mpData = MP.Data.inst(results.values())
+          var sumOfData = mpData.sum().values();
+          $("#pageviews").text(sumOfData.page_viewed);
+          $("#table .mixpanel-platform-chart-table .mp_chart_header :nth-child(2) .content").text("Page Views");
+        })
+        MP.api.segment('visitor', undefined, params).done(function(results) {
+          var mpData = MP.Data.inst(results.values())
+          var sumOfData = mpData.sum().values();
+          $("#visitors").text(sumOfData.visitor);
+        })
+        MP.api.segment('visitor', undefined, params2).done(function(results) {
+          var mpData = MP.Data.inst(results.values())
+          var sumOfData = mpData.sum().values();
+          $("#unique").text(sumOfData.visitor);
+        })
       };
 
 
