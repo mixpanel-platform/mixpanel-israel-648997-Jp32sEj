@@ -116,7 +116,7 @@
           issueSelect = $('#issueSelect').MPSelect(issuelist);
           issueSelect.on('change', function(e, selection) {   
             selectedIssue = selection;
-            console.log("selected issue is", selectedIssue);
+            //console.log("selected issue is", selectedIssue);
             runQuery();
           });
          // for(var i=0; i< issues.childre; i++){
@@ -127,8 +127,8 @@
 
       var runQuery = function() {
         var issuefilter = 'properties["subtitle"] == "' + selectedIssue + '"';
-        console.log(issuefilter);
-        console.log ("filtering on this issue:", selectedIssue);
+        //console.log(issuefilter);
+        //console.log ("filtering on this issue:", selectedIssue);
         dateRange = dateSelect.MPDatepicker('value');
         var params = {
           from: dateRange.from,
@@ -138,7 +138,7 @@
           unit: 'month',                          
           'where': issuefilter
         };
-        console.log(params);
+        //console.log(params);
         var paramsUnique = {
           from: dateRange.from,
           to: dateRange.to,
@@ -151,7 +151,7 @@
        MP.api.segment('page_viewed', params).done(function(results) {
           var mpData = MP.Data.inst(results.values())
           var sumOfData = mpData.sum().values();
-          console.log(mpData);
+          //console.log(mpData);
           $("#pageviews").text(sumOfData.page_viewed);
           $("#table .mixpanel-platform-chart-table .mp_chart_header :nth-child(2) .content").text("Page Views");
         })
