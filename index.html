@@ -6,12 +6,26 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
     <style>
-    .spacer { margin-top: 20px;}
+    .spacer { margin-top: 20px;}    
+    h1 { font-size: 20px; color: #747d94;}
+    .mylabel {
+      float: left;
+      font-size: 12px;
+      width: 40px;
+      height: 31px;
+      text-align: center;
+      margin-right: 10px;
+      color: #747d94;
+      font-family: "helvetica neue",helvetica;
+      line-height: 32px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
     </style>
   </head>
   <body class="mixpanel-platform-body">
     <div class="mixpanel-platform-section">
-      <div id="by" class="mixpanel-platform-label" style="margin-left: 10px; display: none;">by</div>
+      <div id="issueSelectLabel" class="mylabel">Issue:</div>
       <div id="issueSelect" style="float: left;"></div>
       <div id="dateSelect" style="float: right;"></div>
       <div style="clear: both;"></div>
@@ -62,51 +76,82 @@
       startDate.setDate(startDate.getDate() - 30);
       var endDate = new Date();
       var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
+      var issueSelect;
+      var dateRange;
       var eventTable  = $('#table').MPTable({
         showPercentages: true,
         firstColHeader: 'Issue'
       });
-      var params = {
-          limit: 1000,                             // maximum number of results to return
+      var latestIssue = "May/June 2015";
+      var selectedIssue = latestIssue;
+
+      var setFilters = function() {
+        dateRange = dateSelect.MPDatepicker('value');
+        var paramsAll = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 9,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
-          unit: 'month',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          unit: 'month'                          
+        }; 
+        MP.api.segment('page_viewed', 'subtitle', paramsAll).done(function(results) {
+          var issues = results.values();
+          var issuelist = {};
+          issuelist.items = [];
+          $.each(issues, function(key, value){
+                //console.log("logging", key);
+                //$(issuelist).add(key);
+                var issueObj = {};
+                issueObj.label=key;
+                issueObj.value=key;
+                //console.log(issueObj);
+                issuelist.items.push(issueObj);
+                /*for(var i=0; i<key.length; i++){
+                  var obj = JSON.parse(key);
+                  console.log(obj[i]);
+                }
+                */
+          });
+          //console.log("issue list:", issuelist);
+          issueSelect = $('#issueSelect').MPSelect(issuelist);
+          issueSelect.on('change', function(e, selection) {   
+            selectedIssue = selection;
+            console.log("selected issue is", selectedIssue);
+            runQuery();
+          });
+         // for(var i=0; i< issues.childre; i++){
+           // delete(i.children[i])
+          //  }
+        });
       };
+
       var runQuery = function() {
-        var dateRange = dateSelect.MPDatepicker('value');
+        var issuefilter = 'properties["subtitle"] == "' + selectedIssue + '"';
+        console.log(issuefilter);
+        console.log ("filtering on this issue:", selectedIssue);
+        dateRange = dateSelect.MPDatepicker('value');
         var params = {
           from: dateRange.from,
           to: dateRange.to,
           limit: 9,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
-          unit: 'month',                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
-          // the following are undefined by default
-          //'where': 'properties["subtitle"] >=  10',     // an expression to filter by. See event filters
-          //'method': 'average',                    // string specifying a way to aggregate the results, can be 'numeric', 'sum', or 'average'
-          //'buckets': 4,                           // the number of buckets to return in a 'numeric' query
+          unit: 'month',                          
+          'where': issuefilter
         };
-        var params2 = {
+        console.log(params);
+        var paramsUnique = {
           from: dateRange.from,
           to: dateRange.to,
           limit: 10,                             // maximum number of results to return
           type: 'unique',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'month',                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
-          // the following are undefined by default
-          //'where': 'properties["subtitle"] >=  10',     // an expression to filter by. See event filters
-          //'method': 'average',                    // string specifying a way to aggregate the results, can be 'numeric', 'sum', or 'average'
-          //'buckets': 4,                           // the number of buckets to return in a 'numeric' query
+          'where': issuefilter
         };
-
-        MP.api.segment('page_viewed', 'subtitle', params).done(function(results) {
-          var issues = results.values();
-          console.log(issues[1]);
-         // for(var i=0; i< issues.childre; i++){
-           // delete(i.children[i])
-          //  }
-        });
 
        MP.api.segment('page_viewed', params).done(function(results) {
           var mpData = MP.Data.inst(results.values())
           var sumOfData = mpData.sum().values();
+          console.log(mpData);
           $("#pageviews").text(sumOfData.page_viewed);
           $("#table .mixpanel-platform-chart-table .mp_chart_header :nth-child(2) .content").text("Page Views");
         })
@@ -115,16 +160,21 @@
           var sumOfData = mpData.sum().values();
           $("#visitors").text(sumOfData.visitor);
         })
-        MP.api.segment('visitor', undefined, params2).done(function(results) {
+        MP.api.segment('visitor', undefined, paramsUnique).done(function(results) {
           var mpData = MP.Data.inst(results.values())
           var sumOfData = mpData.sum().values();
           $("#unique").text(sumOfData.visitor);
         })
       };
 
-
       dateSelect.on('change', runQuery);
-      $( document ).ready(runQuery);
+
+      $( document ).ready(function() {
+        setFilters();
+        runQuery();
+        console.log( "ready!" );
+      });
+
     </script>
   </body>
 </html>
