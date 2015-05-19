@@ -194,11 +194,7 @@
           $("#visitors").text(sessions);
           
           if (visitors != 0) {
-            console.log("sessions1", sessions);
-            console.log("visitors1", visitors);
-        
             var sessVis = sessions / visitors;
-            console.log("sessvis1", sessVis);
             $("#sessVis").text(sessVis.toFixed(2));
           }
 
@@ -209,12 +205,8 @@
           visitors = sumOfData.visitor;
           $("#unique").text(visitors);
 
-          if (sessions != 0) {
-            console.log("sessions2", sessions);
-            console.log("visitors2", visitors);
-        
+          if (sessions != 0) {       
             var sessVis = sessions / visitors;
-            console.log("sessvis2", sessVis);
             $("#sessVis").text(sessVis.toFixed(2));
           }
 
