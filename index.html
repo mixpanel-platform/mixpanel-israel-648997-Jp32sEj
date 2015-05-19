@@ -21,6 +21,8 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+    .half { width: 50%; float: left;}
+    .hidden { display: none !important; }
     </style>
   </head>
   <body class="mixpanel-platform-body">
@@ -30,40 +32,46 @@
       <div id="dateSelect" style="float: right;"></div>
       <div style="clear: both;"></div>
     </div>
-    <div id="table2" class="mixpanel-platform-output-table mixpanel-platform-output" style="visibility: visible;">
-      <div class="mixpanel-platform-chart-table">
-        <div class="mp_chart_header mp_chart_row">
-          <div class="mp_chart_cell mp_chart_row_label" style="width: 72px;">
-            <span class="content">Metric</span>
+    <div class="half">
+      <div id="table2" class="mixpanel-platform-output-table mixpanel-platform-output" style="visibility: visible;">
+        <div class="mixpanel-platform-chart-table">
+          <div class="mp_chart_header mp_chart_row">
+            <div class="mp_chart_cell mp_chart_row_label" style="width: 72px;">
+              <span class="content">Metric</span>
+            </div>
+            <div class="mp_chart_cell" style="width: 65px;">
+              <span class="content">Total</span>
+            </div>
           </div>
-          <div class="mp_chart_cell" style="width: 65px;">
-            <span class="content">Total</span>
+          <div class="mp_chart_row">
+            <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
+              <span class="content">Page Views</span>
+            </div>
+            <div class="mp_chart_cell" style="width: 65px;">
+              <span id="pageviews"class="content"></span>
+            </div>
+          </div>
+          <div class="mp_chart_row">
+            <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
+              <span class="content">Visitors</span>
+            </div>
+            <div class="mp_chart_cell" style="width: 65px;">
+              <span id="visitors"class="content"></span>
+            </div>
+          </div>
+          <div class="mp_chart_row">
+            <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
+              <span class="content">Unique Visitors</span>
+            </div>
+            <div class="mp_chart_cell" style="width: 65px;">
+              <span id="unique"class="content"></span>
+            </div>
           </div>
         </div>
-        <div class="mp_chart_row">
-          <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
-            <span class="content">Page Views</span>
-          </div>
-          <div class="mp_chart_cell" style="width: 65px;">
-            <span id="pageviews"class="content"></span>
-          </div>
-        </div>
-        <div class="mp_chart_row">
-          <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
-            <span class="content">Visitors</span>
-          </div>
-          <div class="mp_chart_cell" style="width: 65px;">
-            <span id="visitors"class="content"></span>
-          </div>
-        </div>
-        <div class="mp_chart_row">
-          <div class="mp_chart_row_label mp_chart_cell" style="width: 72px;">
-            <span class="content">Unique Visitors</span>
-          </div>
-          <div class="mp_chart_cell" style="width: 65px;">
-            <span id="unique"class="content"></span>
-          </div>
-        </div>
+      </div>
+    </div>
+    <div>
+      <div id="table3">
       </div>
     </div>
     <script>
@@ -72,19 +80,18 @@
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'month',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
       };
+      var eventTable  = $('#table3').MPTable({
+        showPercentages: false,
+        firstColHeader: 'Content'
+      });
       var startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
       var endDate = new Date();
       var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
       var issueSelect;
       var dateRange;
-      var eventTable  = $('#table').MPTable({
-        showPercentages: true,
-        firstColHeader: 'Issue'
-      });
       var latestIssue = "May/June 2015";
       var selectedIssue = latestIssue;
-
       var setFilters = function() {
         dateRange = dateSelect.MPDatepicker('value');
         var paramsAll = {
@@ -165,6 +172,39 @@
           var sumOfData = mpData.sum().values();
           $("#unique").text(sumOfData.visitor);
         })
+        MP.api.segment('page_viewed', 'page', params).done(function(results) {
+          //eventTable.MPTable('setData', results);
+          var mpData = MP.Data.inst(results.values())
+          //console.log(mpData);
+          var sumOfData = mpData.sum().values();
+          console.log("sumOfData=", sumOfData);
+          var dataArray = [];
+          for (pagenum in sumOfData) {
+              var count = sumOfData[pagenum];
+              dataArray.push({Page: pagenum, Total: count});
+          }
+          //console.log(dataArray);
+
+          dataArray.sort(function(a, b){
+              if (a.Total < b.Total) return 1;
+              if (b.Total < a.Total) return -1;
+              return 0;
+          });
+          console.log("dataArray=", dataArray);
+
+          var sortedPages = {};
+          $.each(dataArray, function(key, value){
+            //var contentitem = {};
+
+                //contentitem.count=key;
+                //contentitem.pagenum=value;
+                //console.log(issueObj);
+                sortedPages[value.Page]=value.Total;
+                console.log("adding", value.Page, "to the object.")
+          });
+          console.log("sortedPages=", sortedPages);
+          eventTable.MPTable('setData', dataArray);
+        });
       };
 
       dateSelect.on('change', runQuery);
@@ -173,6 +213,10 @@
         setFilters();
         runQuery();
         console.log( "ready!" );
+        setTimeout(function (){
+          $("#table3 .mixpanel-platform-chart-table .mp_chart_header :nth-child(1)").addClass("hidden");
+          $("#table3 .mixpanel-platform-chart-table .mp_chart_row :nth-child(1)").addClass("hidden");  
+        }, 5000);
       });
 
     </script>
