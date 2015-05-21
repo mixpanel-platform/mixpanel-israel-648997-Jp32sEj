@@ -2,11 +2,10 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link href="http://www.picnicss.com/nut/picnic_3_4.min.css" rel="stylesheet">
 
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/css/reset.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
-
+    <link href="http://cdn.jsdelivr.net/picnicss/3.4.0/picnic.min.css" rel="stylesheet">
 
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
     <style>
@@ -92,14 +91,21 @@
             <h2>Top Content</h2>
             <div id="table3-data" class="mixpanel-platform-chart-table">
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <h2>Page Views by Day</h2>
+          <div id="graph"></div>
         </div>
       </div>
     </div>
     <script>
       var params = {
-          limit: 1000,                             // maximum number of results to return
+          limit: 100000,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
-          unit: 'month',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          unit: 'day',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
       };
       var eventTable  = $('#table3').MPTable({
         showPercentages: false,
@@ -110,6 +116,7 @@
       var endDate = new Date();
       var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
       var issueSelect;
+      var eventGraph  = $('#graph').MPChart({chartType: 'line'});
       var dateRange;
       var latestIssue = "May/June 2015";
       var selectedIssue = latestIssue;
@@ -164,9 +171,9 @@
         var params = {
           from: dateRange.from,
           to: dateRange.to,
-          limit: 9,                             // maximum number of results to return
+          limit: 10,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
-          unit: 'month',                          
+          unit: 'day',                          
           'where': issuefilter
         };
         //console.log(params);
@@ -213,10 +220,13 @@
         })
         MP.api.segment('page_viewed', 'page', params).done(function(results) {
           //eventTable.MPTable('setData', results);
+          //eventGraph.MPChart('setData', results);
+          console.log("results", results);
           var mpData = MP.Data.inst(results.values())
-          //console.log(mpData);
+          console.log("mpData", mpData);
           var sumOfData = mpData.sum().values();
-          //console.log("sumOfData=", sumOfData);
+          eventGraph.MPChart('setData', results);
+          console.log("sumOfData=", sumOfData);
           var dataArray = [];
           for (pagenum in sumOfData) {
               var count = sumOfData[pagenum];
@@ -229,8 +239,7 @@
               if (b.Total < a.Total) return -1;
               return 0;
           });
-          //console.log("dataArray=", dataArray);
-
+          console.log("dataArray=", dataArray);
           var sortedPages = {};
           var table3html = "<div class='mp_chart_header mp_chart_row'><div class='mp_chart_cell mp_chart_row_label'><span class='content'>Page</span></div><div class='mp_chart_cell'><span class='content'>Views</span></div></div>";
           $.each(dataArray, function(key, value){
