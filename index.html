@@ -8,9 +8,9 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
     <!--<link href="http://cdn.jsdelivr.net/picnicss/3.4.0/picnic.min.css" rel="stylesheet">-->
 
-    <link href="dynatable/jspkg-archive/jquery.dynatable.css" rel="stylesheet">
+    <link href="DataTables-1.10.7/media/css/jquery.dataTables.css" rel="stylesheet">
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
-    <script src="dynatable/jspkg-archive/jquery.dynatable.js"></script>
+    <script src="DataTables-1.10.7/media/js/jquery.dataTables.js"></script>
     <style>
     .spacer { margin-top: 20px;}    
     h1 { font-size: 20px; color: #747d94;}
@@ -114,13 +114,13 @@
         </div>
         <div class="dyna-container">
           <h2>Top Content</h2>
-          <table id="table4" class="table table-striped">
-            <thead>
+          <table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+          <thead>
+            <tr>
               <th>Page</th>
               <th>Views</th>
-            </thead>
-            <tbody>
-            </tbody>
+            </tr>
+          </thead>
           </table>
         </div>
       </div>
@@ -147,6 +147,7 @@
       var pageviews = 0;
       var sessions = 0;
       var visitors = 0;
+      var totalsTable;
       var setFilters = function() {
         dateRange = dateSelect.MPDatepicker('value');
         var paramsAll = {
@@ -259,24 +260,21 @@
           }
           
           //console.log(dataArray);
-          
-          var dynatable = $('#table4').dynatable({
-                features: {
-                    pushState: false,
-                    paginate: true,
-                    sort: true,
-                    recordCount: true
-                },
-                dataset: {
-                    sorts: { 'views': -1 },
-                    perPageDefault: 30
-                }
-            }).data('dynatable');
-          
-            dynatable.records.updateFromJson({records: dataArray});
-            dynatable.records.init();
-            dynatable.process();
-        });
+        // if (totalsTable != null) {
+        //   console.log("Totals Table exists");
+        //   totalsTable.destroy();
+        // }
+
+        totalsTable = $('#example').dataTable( {
+            destroy: true,
+            "data": dataArray,
+            "columns": [
+              { "data": "page" },
+              { "data": "views" }
+            ],
+            "order": [[ 1, "desc" ]]
+        } );   
+} );
 
       };
 
