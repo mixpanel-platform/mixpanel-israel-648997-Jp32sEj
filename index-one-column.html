@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <!-- twitter bootstrap css -->
+     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
+    <!--<link href="http://cdn.jsdelivr.net/picnicss/3.4.0/picnic.min.css" rel="stylesheet">-->
+
+    <link href="DataTables-1.10.7/media/css/jquery.dataTables.css" rel="stylesheet">
+    <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
+    <script src="DataTables-1.10.7/media/js/jquery.dataTables.js"></script>
+    <style>
+    .spacer { margin-top: 20px;}    
+    h1 { font-size: 20px; color: #747d94;}
+    h2 { font-size: 16px; color: #747d94; padding: 8px;}
+    .mylabel {
+      float: left;
+      font-size: 12px;
+      width: 40px;
+      height: 31px;
+      text-align: center;
+      margin-right: 10px;
+      color: #747d94;
+      font-family: "helvetica neue",helvetica;
+      line-height: 32px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .hidden { display: none !important; }
+    * {
+      -webkit-box-sizing: content-box;
+      -moz-box-sizing: content-box;
+      box-sizing: content-box;
+    }
+    #table2 .mp_chart_row_label { width: 90px; }
+    body.mixpanel-platform-body {background: #FFFFFF;}
+    th a {color: #337ab7;}
+    th a:focus, th a:hover {
+      color: #23527c;
+      text-decoration: underline;
+    }
+    .mixpanel-platform-multi_selector .checkbox {
+      margin-top: 0px;
+      margin-bottom: 0px;
+    }
+    .dyna-container {
+      padding: 10px;
+    }
+    </style>
+  </head>
+  <body class="mixpanel-platform-body">
+    <div class="mixpanel-platform-section">
+      <div id="issueSelectLabel" class="mylabel">Issue:</div>
+      <div id="issueSelect" style="float: left;"></div>
+      <div id="dateSelect" style="float: right;"></div>
+      <div style="clear: both;"></div>
+    </div>
+    <div class="render">
+      <div class="row">
+        <div>
+          <h2>Page Views by Day</h2>
+          <div id="graph"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <div id="table2" class="mixpanel-platform-output-table mixpanel-platform-output" style="visibility: visible;">
+            <h2>Key Issue Metrics</h2>
+            <div class="mixpanel-platform-chart-table">
+              <div class="mp_chart_header mp_chart_row">
+                <div class="mp_chart_cell mp_chart_row_label">
+                  <span class="content">Metric</span>
+                </div>
+                <div class="mp_chart_cell">
+                  <span class="content">Total</span>
+                </div>
+              </div>
+              <div class="mp_chart_row">
+                <div class="mp_chart_row_label mp_chart_cell">
+                  <span class="content">Page Views</span>
+                </div>
+                <div class="mp_chart_cell">
+                  <span id="pageviews"class="content"></span>
+                </div>
+              </div>
+              <div class="mp_chart_row">
+                <div class="mp_chart_row_label mp_chart_cell">
+                  <span class="content">Sessions</span>
+                </div>
+                <div class="mp_chart_cell">
+                  <span id="visitors"class="content"></span>
+                </div>
+              </div>
+              <div class="mp_chart_row">
+                <div class="mp_chart_row_label mp_chart_cell">
+                  <span class="content">Unique Visitors</span>
+                </div>
+                <div class="mp_chart_cell">
+                  <span id="unique"class="content"></span>
+                </div>
+              </div>
+              <div class="mp_chart_row">
+                <div class="mp_chart_row_label mp_chart_cell">
+                  <span class="content">Sessions / Visitor</span>
+                </div>
+                <div class="mp_chart_cell">
+                  <span id="sessVis"class="content"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dyna-container">
+          <h2>Top Content</h2>
+          <table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>Views</th>
+            </tr>
+          </thead>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script>
+      var params = {
+          limit: 100000,                             // maximum number of results to return
+          type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'day',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+      };
+      var eventTable  = $('#table3').MPTable({
+        showPercentages: false,
+        firstColHeader: 'Content'
+      });
+      var startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      var endDate = new Date();
+      var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
+      var issueSelect;
+      var eventGraph  = $('#graph').MPChart({chartType: 'line'});
+      var dateRange;
+      var latestIssue = "May/June 2015";
+      var selectedIssue = latestIssue;
+      var pageviews = 0;
+      var sessions = 0;
+      var visitors = 0;
+      var totalsTable;
+      var setFilters = function() {
+        dateRange = dateSelect.MPDatepicker('value');
+        var paramsAll = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 9,                             // maximum number of results to return
+          type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'month'                          
+        }; 
+        MP.api.segment('page_viewed', 'subtitle', paramsAll).done(function(results) {
+          var issues = results.values();
+          var issuelist = {};
+          issuelist.items = [];
+          $.each(issues, function(key, value){
+                //console.log("logging", key);
+                //$(issuelist).add(key);
+                var issueObj = {};
+                issueObj.label=key;
+                issueObj.value=key;
+                //console.log(issueObj);
+                issuelist.items.push(issueObj);
+                /*for(var i=0; i<key.length; i++){
+                  var obj = JSON.parse(key);
+                  console.log(obj[i]);
+                }
+                */
+          });
+          //console.log("issue list:", issuelist);
+          issueSelect = $('#issueSelect').MPSelect(issuelist);
+          issueSelect.on('change', function(e, selection) {   
+            selectedIssue = selection;
+            //console.log("selected issue is", selectedIssue);
+            runQuery();
+          });
+         // for(var i=0; i< issues.childre; i++){
+           // delete(i.children[i])
+          //  }
+        });
+      };
+
+      var runQuery = function() {
+        var issuefilter = 'properties["subtitle"] == "' + selectedIssue + '"';
+        //console.log(issuefilter);
+        //console.log ("filtering on this issue:", selectedIssue);
+        dateRange = dateSelect.MPDatepicker('value');
+        var params = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 10,                             // maximum number of results to return
+          type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'day',                          
+          'where': issuefilter
+        };
+        //console.log(params);
+        var paramsUnique = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 10,                             // maximum number of results to return
+          type: 'unique',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'month',                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          'where': issuefilter
+        };
+
+       MP.api.segment('page_viewed', params).done(function(results) {
+          var mpData = MP.Data.inst(results.values())
+          var sumOfData = mpData.sum().values();
+          //console.log(mpData);
+          pageviews = sumOfData.page_viewed;
+          $("#pageviews").text(pageviews);
+          $("#table .mixpanel-platform-chart-table .mp_chart_header :nth-child(2) .content").text("Page Views");
+        })
+        MP.api.segment('visitor', undefined, params).done(function(results) {
+          var mpData = MP.Data.inst(results.values())
+          var sumOfData = mpData.sum().values();
+          sessions = sumOfData.visitor;
+          $("#visitors").text(sessions);
+          
+          if (visitors != 0) {
+            var sessVis = sessions / visitors;
+            $("#sessVis").text(sessVis.toFixed(2));
+          }
+
+        })
+        MP.api.segment('visitor', undefined, paramsUnique).done(function(results) {
+          var mpData = MP.Data.inst(results.values())
+          var sumOfData = mpData.sum().values();
+          visitors = sumOfData.visitor;
+          $("#unique").text(visitors);
+
+          if (sessions != 0) {       
+            var sessVis = sessions / visitors;
+            $("#sessVis").text(sessVis.toFixed(2));
+          }
+
+        })
+        MP.api.segment('page_viewed', 'page', params).done(function(results) {
+          //eventTable.MPTable('setData', results);
+          //eventGraph.MPChart('setData', results);
+          //console.log("results", results);
+          var mpData = MP.Data.inst(results.values())
+          //console.log("mpData", mpData);
+          var sumPageViews = mpData.sum().values();
+          //eventTable.MPTable('setData', sumOfData);
+          eventGraph.MPChart('setData', results);
+          //console.log("sumOfData=", sumPageViews);
+          var dataArray = [];
+          for (pagenum in sumPageViews) {
+              var count = sumPageViews[pagenum];
+              dataArray.push({page: pagenum, views: count});
+          }
+          
+          //console.log(dataArray);
+        // if (totalsTable != null) {
+        //   console.log("Totals Table exists");
+        //   totalsTable.destroy();
+        // }
+
+        totalsTable = $('#example').dataTable( {
+            destroy: true,
+            "data": dataArray,
+            "columns": [
+              { "data": "page" },
+              { "data": "views" }
+            ],
+            "order": [[ 1, "desc" ]]
+        } );   
+} );
+
+      };
+
+      dateSelect.on('change', runQuery);
+
+      $( document ).ready(function() {
+
+        setFilters();
+        runQuery();
+      });
+
+    </script>
+  </body>
+</html>

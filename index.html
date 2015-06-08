@@ -1,16 +1,16 @@
 <!DOCTYPE html>
+<!-- ?api_key=3e7443634e2c54d2fb74419bd6ec7703&api_secret=535ef4be8d00bcf31e9b8c9cf54d1abf -->
 <html>
   <head>
     <meta charset="utf-8">
-    <!-- twitter bootstrap css -->
-     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/css/reset.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!--<link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/css/reset.css">-->
     <link rel="stylesheet" type="text/css" href="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.css">
-    <!--<link href="http://cdn.jsdelivr.net/picnicss/3.4.0/picnic.min.css" rel="stylesheet">-->
-
     <link href="DataTables-1.10.7/media/css/jquery.dataTables.css" rel="stylesheet">
     <script src="https://cdn.mxpnl.com/libs/mixpanel-platform/build/mixpanel-platform.v0.latest.min.js"></script>
     <script src="DataTables-1.10.7/media/js/jquery.dataTables.js"></script>
+    
     <style>
     .spacer { margin-top: 20px;}    
     h1 { font-size: 20px; color: #747d94;}
@@ -29,7 +29,7 @@
       margin-bottom: 10px;
     }
     .hidden { display: none !important; }
-    * {
+    .select_button {
       -webkit-box-sizing: content-box;
       -moz-box-sizing: content-box;
       box-sizing: content-box;
@@ -48,106 +48,119 @@
     .dyna-container {
       padding: 10px;
     }
+    .row {
+      margin-bottom: 15px;
+    }
     </style>
   </head>
-  <body class="mixpanel-platform-body">
+  <body>
     <div class="mixpanel-platform-section">
       <div id="issueSelectLabel" class="mylabel">Issue:</div>
       <div id="issueSelect" style="float: left;"></div>
       <div id="dateSelect" style="float: right;"></div>
       <div style="clear: both;"></div>
     </div>
-    <div class="render">
-      <div class="row">
-        <div>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+          <h2>Key Issue Metrics</h2>
+          <table id="table2" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>All</th>
+                <th>Unique</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="content">Page Views</span></td>
+                <td><span id="pageviews" class="content"></span></td>
+                <td><span id="pageviews-unique" class="content"></span></td>
+              <tr>
+                <td><span class="content">Article Views</span></td>
+                <td><span id="articleviews" class="content"></span></td>
+                <td><span id="articleviews-unique" class="content"></span></td>
+              </tr>
+              <tr>
+                <td><span class="content">Total Views</span></td>
+                <td><span id="totalviews" class="content"></span></td>
+                <td><span id="totalviews-unique" class="content"></span></td>
+              </tr>
+              <tr>
+                <td><span class="content">Sessions</span></td>
+                <td><span id="sessions" class="content"></span></td>
+                <td><span class="content"></span></td>
+              </tr>
+              <tr>
+                <td><span class="content">Sessions / Visitor</span></td>
+                <td><span id="sessVis"class="content"></span></td>
+                <td><span class="content"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+       <div class="col-md-6">
+        <H2>Devices (Page Views Only)</H2>
+        <div id="device-pie"></div>
+       </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
           <h2>Page Views by Day</h2>
           <div id="graph"></div>
         </div>
       </div>
-      <div class="row">
-        <div>
-          <div id="table2" class="mixpanel-platform-output-table mixpanel-platform-output" style="visibility: visible;">
-            <h2>Key Issue Metrics</h2>
-            <div class="mixpanel-platform-chart-table">
-              <div class="mp_chart_header mp_chart_row">
-                <div class="mp_chart_cell mp_chart_row_label">
-                  <span class="content">Metric</span>
-                </div>
-                <div class="mp_chart_cell">
-                  <span class="content">Total</span>
-                </div>
-              </div>
-              <div class="mp_chart_row">
-                <div class="mp_chart_row_label mp_chart_cell">
-                  <span class="content">Page Views</span>
-                </div>
-                <div class="mp_chart_cell">
-                  <span id="pageviews"class="content"></span>
-                </div>
-              </div>
-              <div class="mp_chart_row">
-                <div class="mp_chart_row_label mp_chart_cell">
-                  <span class="content">Sessions</span>
-                </div>
-                <div class="mp_chart_cell">
-                  <span id="visitors"class="content"></span>
-                </div>
-              </div>
-              <div class="mp_chart_row">
-                <div class="mp_chart_row_label mp_chart_cell">
-                  <span class="content">Unique Visitors</span>
-                </div>
-                <div class="mp_chart_cell">
-                  <span id="unique"class="content"></span>
-                </div>
-              </div>
-              <div class="mp_chart_row">
-                <div class="mp_chart_row_label mp_chart_cell">
-                  <span class="content">Sessions / Visitor</span>
-                </div>
-                <div class="mp_chart_cell">
-                  <span id="sessVis"class="content"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="dyna-container">
-          <h2>Top Content</h2>
-          <table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="datatable3and4">
           <thead>
             <tr>
-              <th>Page</th>
+              <th>Page/Article</th>
               <th>Views</th>
+              <th>Unique</th>
             </tr>
           </thead>
-          </table>
-        </div>
+        </table>
       </div>
     </div>
+  </div>
+
     <script>
       var params = {
           limit: 100000,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'day',                          // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
       };
-      var eventTable  = $('#table3').MPTable({
+      var eventTable3  = $('#table3').MPTable({
+        showPercentages: false,
+        firstColHeader: 'Content'
+      });
+      var eventTable4  = $('#table4').MPTable({
         showPercentages: false,
         firstColHeader: 'Content'
       });
       var startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
+      //startDate.setDate(startDate.getDate() - 30);
       var endDate = new Date();
-      var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
+      //var dateSelect  = $('#dateSelect').MPDatepicker().val({ from: startDate, to: endDate });
+      var dateSelect  = $('#dateSelect').MPDatepicker();
       var issueSelect;
-      var eventGraph  = $('#graph').MPChart({chartType: 'line'});
       var dateRange;
-      var latestIssue = "May/June 2015";
+      var latestIssue = "CSF 1";  //We'll have to figure a way to get the latest issue populated here.  Or maybe we just take the issue with the biggest numbers for the initial time period?
       var selectedIssue = latestIssue;
       var pageviews = 0;
+      var articleviews =0;
       var sessions = 0;
       var visitors = 0;
-      var totalsTable;
+      var uniqueViews;
+      var uniquePageViews;
+      var uniqueArticleViews;
+      var uniqueTotalPageviews;
+      var uniqueTotalArticleviews;
+      var totalViews;
+      var uniqueTotalViews;
+      
       var setFilters = function() {
         dateRange = dateSelect.MPDatepicker('value');
         var paramsAll = {
@@ -157,46 +170,52 @@
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'month'                          
         }; 
-        MP.api.segment('page_viewed', 'subtitle', paramsAll).done(function(results) {
+        MP.api.segment('page_viewed', 'issue', paramsAll).done(function(results) {
           var issues = results.values();
           var issuelist = {};
           issuelist.items = [];
           $.each(issues, function(key, value){
                 //console.log("logging", key);
-                //$(issuelist).add(key);
                 var issueObj = {};
                 issueObj.label=key;
                 issueObj.value=key;
                 //console.log(issueObj);
                 issuelist.items.push(issueObj);
-                /*for(var i=0; i<key.length; i++){
-                  var obj = JSON.parse(key);
-                  console.log(obj[i]);
-                }
-                */
           });
-          //console.log("issue list:", issuelist);
+          console.log(selectedIssue);
           issueSelect = $('#issueSelect').MPSelect(issuelist);
+          issueSelect.val(selectedIssue);
           issueSelect.on('change', function(e, selection) {   
             selectedIssue = selection;
             //console.log("selected issue is", selectedIssue);
             runQuery();
           });
-         // for(var i=0; i< issues.childre; i++){
-           // delete(i.children[i])
-          //  }
         });
-      };
+      }; //end setFilters
 
       var runQuery = function() {
-        var issuefilter = 'properties["subtitle"] == "' + selectedIssue + '"';
+        pageviews = 0;
+        articleviews = 0;
+        uniqueViews = 0;
+        uniquePageViews = 0;
+        uniqueArticleViews = 0;
+        uniqueTotalPageviews = 0;
+        uniqueTotalArticleviews = 0;
+        totalViews = 0;
+        uniqueTotalViews = 0;
+        var dataArray3 = [];
+        var dataArray4 = [];
+        var dataArray3and4 = [];
+        console.log("selected issue is " + selectedIssue);
+        var issuefilter = 'properties["issue"] == "' + selectedIssue + '"';
         //console.log(issuefilter);
         //console.log ("filtering on this issue:", selectedIssue);
         dateRange = dateSelect.MPDatepicker('value');
+
         var params = {
           from: dateRange.from,
           to: dateRange.to,
-          limit: 10,                             // maximum number of results to return
+          limit: 1000,                             // maximum number of results to return
           type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
           unit: 'day',                          
           'where': issuefilter
@@ -205,85 +224,200 @@
         var paramsUnique = {
           from: dateRange.from,
           to: dateRange.to,
-          limit: 10,                             // maximum number of results to return
+          limit: 1000,                             // maximum number of results to return
           type: 'unique',                        // analysis type for the data, can be 'general', 'unique', or 'average'
-          unit: 'month',                           // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          unit: 'month',                   // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
           'where': issuefilter
         };
+        var paramsDevice = {
+          from: dateRange.from,
+          to: dateRange.to,
+          limit: 1000,                             // maximum number of results to return
+          type: 'general',                        // analysis type for the data, can be 'general', 'unique', or 'average'
+          unit: 'day',
+          //method: "sum",                   // level of granularity of the data, can be 'minute', 'hour', 'day', or 'month'
+          'where': issuefilter
+        };     
 
+      var deferreds = [];
+
+      console.log(paramsDevice);
+      MP.api.segment('page_viewed', '$device', paramsDevice).done(function(results) {
+          var vals = results.values();
+          console.log("Devices", vals);
+          if (!jQuery.isEmptyObject(vals)){
+            var devicePie = $('#device-pie').MPChart({chartType: 'pie'});
+            devicePie.MPChart('setData', vals);
+          }
+          else {
+            var devicePie = null;
+            console.log("no data for pie");
+            $("#device-pie").text("No data for the specified filters");
+          }
+          
+        })        
+        
+deferreds.push(//call 1
        MP.api.segment('page_viewed', params).done(function(results) {
+          //console.log("results1", results.json);
           var mpData = MP.Data.inst(results.values())
           var sumOfData = mpData.sum().values();
           //console.log(mpData);
-          pageviews = sumOfData.page_viewed;
-          $("#pageviews").text(pageviews);
-          $("#table .mixpanel-platform-chart-table .mp_chart_header :nth-child(2) .content").text("Page Views");
-        })
-        MP.api.segment('visitor', undefined, params).done(function(results) {
-          var mpData = MP.Data.inst(results.values())
-          var sumOfData = mpData.sum().values();
-          sessions = sumOfData.visitor;
-          $("#visitors").text(sessions);
+          if (sumOfData.page_viewed != null){
+            pageviews = sumOfData.page_viewed;
+          }
+          else
+          {
+            pageviews = 0;
+          }
           
-          if (visitors != 0) {
-            var sessVis = sessions / visitors;
-            $("#sessVis").text(sessVis.toFixed(2));
-          }
-
+          $("#pageviews").text(pageviews);
         })
-        MP.api.segment('visitor', undefined, paramsUnique).done(function(results) {
+       );
+
+deferreds.push(//call 2
+       MP.api.segment('article_view', params).done(function(results) {
+        //console.log("results2", results.json);
+          var mpData = MP.Data.inst(results.values());
+          //console.log(mpData);
+          var sumOfData = mpData.sum().values();
+          //console.log(mpData);
+          if (sumOfData.article_view != null){
+          articleviews = sumOfData.article_view;
+          }
+          else {
+            articleviews = 0;
+          }
+          $("#articleviews").text(articleviews);
+        })
+       );
+
+deferreds.push(//call 3
+       MP.api.segment('page_viewed', paramsUnique).done(function(results) {
+          //console.log("results1", results.json);
           var mpData = MP.Data.inst(results.values())
           var sumOfData = mpData.sum().values();
-          visitors = sumOfData.visitor;
-          $("#unique").text(visitors);
-
-          if (sessions != 0) {       
-            var sessVis = sessions / visitors;
-            $("#sessVis").text(sessVis.toFixed(2));
+          //console.log(mpData);
+          uniqueTotalPageviews = sumOfData.page_viewed;
+          if (sumOfData.page_viewed != null){
+            uniqueTotalPageviews = sumOfData.page_viewed;
           }
-
+          else
+          {
+            uniqueTotalPageviews = 0;
+          }
+          $("#pageviews-unique").text(uniqueTotalPageviews);
         })
+       );
+
+deferreds.push(//call 4
+       MP.api.segment('article_view', paramsUnique).done(function(results) {
+        //console.log("results2", results.json);
+          var mpData = MP.Data.inst(results.values());
+          //console.log(mpData);
+          var sumOfData = mpData.sum().values();
+          //console.log(mpData);
+          if (sumOfData.article_view != null){
+            uniqueTotalArticleviews = sumOfData.article_view;
+          }
+          else {
+            uniqueTotalArticleviews = 0;
+          }
+          $("#articleviews-unique").text(uniqueTotalArticleviews);
+        })
+       );
+
+deferreds.push(//call 5
         MP.api.segment('page_viewed', 'page', params).done(function(results) {
-          //eventTable.MPTable('setData', results);
-          //eventGraph.MPChart('setData', results);
-          //console.log("results", results);
-          var mpData = MP.Data.inst(results.values())
-          //console.log("mpData", mpData);
+          console.log("results3", results.json);
+          if (!jQuery.isEmptyObject(results.json)){
+            var eventGraph  = $('#graph').MPChart({chartType: 'line'});
+            eventGraph.MPChart('setData', results);
+          }
+          else {
+            $("#graph").text("No data for the specified filters");
+          }
+          var mpData = MP.Data.inst(results.values());
           var sumPageViews = mpData.sum().values();
-          //eventTable.MPTable('setData', sumOfData);
-          eventGraph.MPChart('setData', results);
-          //console.log("sumOfData=", sumPageViews);
-          var dataArray = [];
           for (pagenum in sumPageViews) {
               var count = sumPageViews[pagenum];
-              dataArray.push({page: pagenum, views: count});
+              dataArray3.push({page: pagenum, views: count});
+              dataArray3and4.push({"pageOrArticle": pagenum, "views": count, "unique":-1});
           }
-          
-          //console.log(dataArray);
-        // if (totalsTable != null) {
-        //   console.log("Totals Table exists");
-        //   totalsTable.destroy();
-        // }
+        })
+  );    
 
-        totalsTable = $('#example').dataTable( {
+deferreds.push(//call 6
+      MP.api.segment('article_view', 'article', params).done(function(results) {
+          //console.log("results4", results.json);
+          var mpData = MP.Data.inst(results.values());
+          var sumArticleViews = mpData.sum().values();
+          for (article in sumArticleViews) {
+              var count = sumArticleViews[article];
+              dataArray4.push({article: article, views: count});
+              dataArray3and4.push({"pageOrArticle": article, "views": count, "unique":-1});
+          }
+        })
+      );
+
+deferreds.push(//call 7
+        MP.api.segment('page_viewed', "page", paramsUnique).done(function(results) {
+          //console.log("results5", results.json);
+          var mpData = MP.Data.inst(results.values());
+          uniquePageViews = mpData.sum().values(); 
+        })        
+  );
+
+deferreds.push(//call 8
+        MP.api.segment('article_view', "article", paramsUnique).done(function(results) {
+          //console.log("results6", results.json);
+          var mpData = MP.Data.inst(results.values());
+          uniqueArticleViews = mpData.sum().values();
+          
+        })
+);
+
+$.when.apply(null, deferreds).done(function() {
+        //console.log(pageviews+articleviews);
+        //console.log(deferreds);
+        console.log(pageviews);
+        console.log(articleviews);
+        totalViews = pageviews + articleviews;
+        uniqueTotalViews = uniqueTotalPageviews + uniqueTotalArticleviews;
+        $("#totalviews").text(totalViews);
+        $("#totalviews-unique").text(uniqueTotalViews);
+        uniqueViews = $.extend({}, uniquePageViews, uniqueArticleViews);
+        $.each(dataArray3and4, function( index, value ) {
+            //console.log( index + ": " + value.pageOrArticle );
+            if(uniqueViews[value.pageOrArticle]){
+              value.unique=uniqueViews[value.pageOrArticle];
+            }else{
+              console.log("could not find "+value.pageOrArticle);
+            }
+        });
+
+        totalsTable = $('#datatable3and4').dataTable( {
             destroy: true,
-            "data": dataArray,
+            "data": dataArray3and4,
             "columns": [
-              { "data": "page" },
-              { "data": "views" }
+              { "data": "pageOrArticle" },
+              { "data": "views" },
+              { "data": "unique" }
             ],
             "order": [[ 1, "desc" ]]
         } );   
-} );
 
-      };
+
+        });//end when
+      };//done runQuery
+    
 
       dateSelect.on('change', runQuery);
 
       $( document ).ready(function() {
-
         setFilters();
         runQuery();
+        //console.log( "ready!" );
       });
 
     </script>
